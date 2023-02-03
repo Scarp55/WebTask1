@@ -1,23 +1,28 @@
 package ru.pivovarov;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.util.List;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
-        final var validPaths = List.of(
-                "/index.html",
-                "/spring.svg",
-                "/spring.png",
-                "/resources.html",
-                "/styles.css",
-                "/app.js",
-                "/links.html",
-                "/forms.html",
-                "/classic.html",
-                "/events.html",
-                "/events.js");
-        Server server = new Server(9999, validPaths);
-        server.run();
+
+    public static void main(String[] args) {
+        final var server = new Server();
+
+        // добавление handler'ов (обработчиков)
+        server.addHandler("GET", "/messages", (request, out) -> sendResponse(out, "Hello from GET /message"));
+        server.addHandler("POST", "/messages", (request, out) -> sendResponse(out, "Hello from POST /messages"));
+
+        server.listen(9999);
+    }
+
+    private static void sendResponse(BufferedOutputStream out, String response) throws IOException {
+        out.write((
+                "HTTP/1.1 200 OK\r\n" +
+                        "Content-Length: " + response.length() + "\r\n" +
+                        "Connection: close\r\n" +
+                        "\r\n"
+        ).getBytes());
+        out.write(response.getBytes());
+        out.flush();
     }
 }
